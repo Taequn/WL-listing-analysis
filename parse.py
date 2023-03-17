@@ -622,9 +622,9 @@ class Listings:
 
         try:
             json_data = soup.find_all('script', type='application/ld+json')[1]
-            entries = json.loads(json_data.text)
         except IndexError:
             return
+        entries = json.loads(json_data.text)
 
         for entry in entries:
             date = entry['startDate']
