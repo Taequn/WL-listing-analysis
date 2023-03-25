@@ -153,56 +153,10 @@ class Listings:
         df['Listing'] = 'UpcomingNFT.net'
         self.df = self.df.append(df, ignore_index=True)
 
-    def nearingnft(self):
-        df = pd.DataFrame()
-        print("Checking NearingNFT.net")
-
-        url = 'https://www.nearingnft.net/api/v1/filter-data/?path=%2F&filter=upcoming'
-        r = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        response = urlopen(r).read()
-        json_data = json.loads(response)
-        html_body = json_data['data']
-        soup = BeautifulSoup(html_body, 'html.parser')
-        divs = soup.find_all("div", class_="row")
-        for div in divs:
-            name = div.find("h3", class_='d-inline').text.strip()
-            date = div.find('div', class_=re.compile('card-date')).text.strip() + " 2023"
-            date = datetime.datetime.strptime(date, '%b %d %Y').strftime("%Y-%m-%d")
-
-
-            try:
-                twitter = div.find('a', title=name+"'s twitter").get('href')
-            except AttributeError:
-                twitter = ''
-
-            try:
-                website = div.find('a', title=name+"'s website").get('href')
-            except AttributeError:
-                website = ''
-
-            try:
-                discord = div.find('a', title=name+"'s discord").get('href')
-            except AttributeError:
-                discord = ''
-
-
-            socials = div.find('ul', class_='card-socials')
-            socials = socials.find_all('li')
-            price = socials[0].text.strip()
-
-            platform = socials[0].find('img').get('alt').split(" ")[0]
-            platform = platform[0].upper() + platform[1:]
-
-            df = df.append({"Date": date, "Link": website, "Collection": name,
-                            "Discord": discord, "Twitter": twitter, "Supply": 'N/A',
-                            "Platform": platform, "Price": price}, ignore_index=True)
-        df['Listing'] = 'NearingNFT.net'
-        self.df = self.df.append(df, ignore_index=True)
-
 
     def luckytrader(self):
         df = pd.DataFrame()
-        print("Checking NearingNFT.net")
+        print("Checking LuckyTrader.com")
 
         url = 'https://luckytrader.com/nft/schedule?category=1'
         r = requests.get(url)
@@ -210,6 +164,7 @@ class Listings:
 
         script = soup.find("script", id="__NEXT_DATA__")
         json_data = json.loads(script.text)
+        print(json_data)
         nfts = json_data['props']['pageProps']['events']
         for nft in nfts:
             name = nft['title']
@@ -476,7 +431,7 @@ class Listings:
 
             df = df.append({"Date": date, "Link": link, "Collection": name,
                             "Discord": discord, "Twitter": twitter, "Supply": supply,
-                            "Platform": platform, "Price": price[:-3]}, ignore_index=True)
+                            "Platform": platform, "Price": price.split(" ")[0]}, ignore_index=True)
 
         df['Listing'] = 'Seafloor'
         self.df = self.df.append(df, ignore_index=True)
@@ -560,7 +515,7 @@ class Listings:
             try: supply = rows[1].find_all("td")[1].text.strip()
             except IndexError: supply = ''
 
-            try: price = rows[2].find_all("td")[1].text.strip()
+            try: price = rows[2].find_all("td")[1].text.strip().split(" ")[0]
             except IndexError: price = ''
 
             date = nft.find('div', class_='counter').get('drop_date')
@@ -709,7 +664,6 @@ class Listings:
                         platform = 'Solana'
                     elif "ADA" in price:
                         platform = 'Cardano'
-                    price = price.split(' ')[0]
                 if x == 5:
                     link = columns[x].find('a')['href']
                 if x == 6:
@@ -722,7 +676,7 @@ class Listings:
 
             df = df.append({"Date": date, "Link": link, "Collection": collection,
                             "Discord": discord, "Twitter": twitter, "Supply": supply,
-                            "Platform": platform, "Price": price}, ignore_index=True)
+                            "Platform": platform, "Price": price.split(' ')[0]}, ignore_index=True)
 
         df['Listing'] = 'NextDrop.is'
         self.df = self.df.append(df, ignore_index=True)
@@ -764,7 +718,7 @@ class Listings:
 
             df = df.append({"Date": date, "Link": link, "Collection": collection,
                             "Discord": discord, "Twitter": twitter, "Supply": supply,
-                            "Platform": platform, "Price": price}, ignore_index=True)
+                            "Platform": platform, "Price": price.split(" ")[0]}, ignore_index=True)
 
         df['Listing'] = 'NextDrop.com'
         self.df = self.df.append(df, ignore_index=True)
@@ -820,14 +774,13 @@ class Listings:
         self.nftreminder()
         self.raritysniper()
         self.upcomingnft()
-        #self.nearingnft()
-        self.luckytrader()
+        #self.luckytrader()
         self.crypto()
         self.mintyscore()
         self.raritytools()
         self.seafloor()
         self.nfteller()
-        #self.nftevening() FIX THIS
+        self.nftevening()
         self.icytools()
         self.nftsolana()
         self.nextdrop()
