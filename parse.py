@@ -44,7 +44,10 @@ class Listings:
 
             for upcoming_nft in upcoming_nfts:
                 date = upcoming_nft["dateTime"]
-                date = convert_date_format(date)
+                try:
+                    date = convert_date_format(date)
+                except ValueError:
+                    continue
                 price = upcoming_nft["mintPrice"][:-4]
                 df = df.append({"Date": date, "Link": upcoming_nft["website"], "Collection": upcoming_nft["name"],
                                 "Discord": upcoming_nft["discord"], "Twitter": upcoming_nft["twitter"], "Supply": upcoming_nft["volume"],
